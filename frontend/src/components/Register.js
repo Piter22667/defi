@@ -3,7 +3,7 @@ import { TextField, Button, Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 
-export default function Register({ onRegister }) {
+export default function Register({ setToken }) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -23,7 +23,7 @@ export default function Register({ onRegister }) {
             navigate("/");
             if (!response.ok) throw new Error("Something went wrong");
             const data = await response.json();
-            onRegister(data.token);
+            setToken(data.token);
         } catch (err) {
             setError(err.message);
         }
@@ -46,6 +46,8 @@ export default function Register({ onRegister }) {
                     fullWidth
                     margin="normal"
                     value={email}
+                    error={!email}
+
                     onChange={e => setEmail(e.target.value)}
                 />
                 <TextField
@@ -54,10 +56,14 @@ export default function Register({ onRegister }) {
                     fullWidth
                     margin="normal"
                     value={password}
+                    error={!password}
+
                     onChange={e => setPassword(e.target.value)}
                 />
                 {error && <Typography color="error">{error}</Typography>}
-                <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+                <Button
+                    disabled={!email || !password}
+                    type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
                     Створити обліковий запис
                 </Button>
 

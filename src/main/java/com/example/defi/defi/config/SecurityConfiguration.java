@@ -30,6 +30,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/**").permitAll() // Дозволяємо доступ до всіх запитів, що починаються з /api/v1/auth
                         .requestMatchers("/cr/**").permitAll()
+                        .requestMatchers("/dune/**").permitAll()
+                        .requestMatchers("/tx/**").permitAll()
+
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Вказуємо, що сесії не використовуються, once per request filter ідея

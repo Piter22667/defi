@@ -17,7 +17,7 @@ const SnackBarPopUp = () => {
                 transform: "translateX(-50%)",
             }}
         >
-            <Alert severity="success" onClose={() => setOpen(false)}
+            <Alert severity="success" onClose={() => setOpen(false)} //після 2 секунд прибираємо попап через стан open
                    sx={{
                        width: "100%",
                        minHeight: 40,

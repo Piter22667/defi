@@ -49,26 +49,24 @@ public class DefiLamaServiceImpl implements DefiLamaService {
 
     @Override
     public List<ChainDto> getTvlByChain() {
+        List<ChainTvlEntity> savedEntities = chainTvlRepository.findAll();
+        if(!savedEntities.isEmpty()) {
+            return savedEntities.stream()
+                    .map(entity -> {
+                        ChainDto dto = new ChainDto();
+                        dto.setName(entity.getName());
+                        dto.setTvl(entity.getTvl());
+                        dto.setTokenSymbol(entity.getTokenSymbol());
+                        return dto;
+                    })
+                    .toList();
+        }
+
         String url = "https://api.llama.fi/v2/chains\n";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         System.out.println(response.getBody());
 
-
         try{
-
-            List<ChainTvlEntity> savedEntities = chainTvlRepository.findAll();
-            if(!savedEntities.isEmpty()) {
-                return savedEntities.stream()
-                        .map(entity -> {
-                            ChainDto dto = new ChainDto();
-                            dto.setName(entity.getName());
-                            dto.setTvl(entity.getTvl());
-                            dto.setTokenSymbol(entity.getTokenSymbol());
-                            return dto;
-                        })
-                        .toList();
-            }
-
 
             List<ChainDto> chainDtos = objectMapper.readValue(response.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, ChainDto.class));
             chainDtos.forEach(chainDto -> chainDto.setTvl(Math.round(chainDto.getTvl() / 1_000_000_000.0 * 100.0) / 100.0));
@@ -111,7 +109,7 @@ public class DefiLamaServiceImpl implements DefiLamaService {
                     }).toList();
 
             chainTvlRepository.saveAll(chainTvlEntities);
-            DefiLamaServiceImpl.log.info("Saved {} chain TVLs", chainTvlEntities.size());
+            log.info("Saved {} chain TVLs", chainTvlEntities.size());
 
             return topTenChains;
 
@@ -123,23 +121,22 @@ public class DefiLamaServiceImpl implements DefiLamaService {
 
     @Override
     public List<DexDto> getDexVolume() {
+        List<DexTvlEntity> savedEntities = dexTvlRepository.findAll();
+        if(!savedEntities.isEmpty()) {
+            return savedEntities.stream()
+                    .map(entity -> {
+                        DexDto dto = new DexDto();
+                        dto.setDisplayName(entity.getDisplayName());
+                        dto.setTotal7d(entity.getTotal7d());
+                        return dto;
+                    })
+                    .toList();
+        }
+
         String url = "https://api.llama.fi/overview/dexs?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true&dataType=dailyVolume";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
 
         try{
-            List<DexTvlEntity> savedEntities = dexTvlRepository.findAll();
-            if(!savedEntities.isEmpty()) {
-                return savedEntities.stream()
-                        .map(entity -> {
-                            DexDto dto = new DexDto();
-                            dto.setDisplayName(entity.getDisplayName());
-                            dto.setTotal7d(entity.getTotal7d());
-                            return dto;
-                        })
-                        .toList();
-            }
-
-
             DexVolumeDto dexVolumeDto = objectMapper.readValue(response.getBody(), DexVolumeDto.class);
 
             List<ProtocolDto> sortedProtocols = dexVolumeDto.getProtocols().stream()
@@ -155,7 +152,7 @@ public class DefiLamaServiceImpl implements DefiLamaService {
                         return dexDto;
                     }).toList();
 
-            System.out.println(toptenDex.size() + " amount of DEXs" + " top 15 DEXs" + toptenDex);
+            log.info("{} amount of DEXs top 15 DEXs{}", toptenDex.size(), toptenDex);
 
             double othersTotal = sortedProtocols.stream()
                     .skip(15)
@@ -180,7 +177,7 @@ public class DefiLamaServiceImpl implements DefiLamaService {
                     }).toList();
 
             dexTvlRepository.saveAll(dexTvlEntities);
-            DefiLamaServiceImpl.log.info("Saved {} chain TVLs", dexTvlEntities.size());
+            log.info("Saved {} dex Volumes", dexTvlEntities.size());
 
             return toptenDex;
 
@@ -192,6 +189,22 @@ public class DefiLamaServiceImpl implements DefiLamaService {
 
     @Override
     public List<UsdCirculationDto> getUsdCirculation() {
+        List<StableCoinCirculationEntity> existCirculation = stableCoinCirculationRepository.findAll();
+        if(!existCirculation.isEmpty()) {
+            return existCirculation.stream()
+                    .map(entity -> {
+                        UsdCirculationDto.Circulating circulating = new UsdCirculationDto.Circulating();
+                        circulating.setPeggedUSD(entity.getPeggedUSD());
+
+                        UsdCirculationDto dto = new UsdCirculationDto();
+                        dto.setDate(entity.getDate());
+                        dto.setTotalCirculatingUSD(circulating);
+                        return dto;
+
+                    })
+                    .toList();
+        }
+
         String url = "https://stablecoins.llama.fi/stablecoincharts/all?stablecoin=1";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
 
@@ -199,24 +212,6 @@ public class DefiLamaServiceImpl implements DefiLamaService {
             DefiLamaServiceImpl.log.error("Error fethching data from API");
             return new ArrayList<>();
         }
-
-
-        List<StableCoinCirculationEntity> existCirculation = stableCoinCirculationRepository.findAll();
-        if(!existCirculation.isEmpty()) {
-            return existCirculation.stream()
-                    .map(entity -> {
-                       UsdCirculationDto.Circulating circulating = new UsdCirculationDto.Circulating();
-                       circulating.setPeggedUSD(entity.getPeggedUSD());
-
-                       UsdCirculationDto dto = new UsdCirculationDto();
-                       dto.setDate(entity.getDate());
-                       dto.setTotalCirculatingUSD(circulating);
-                       return dto;
-
-                    })
-                    .toList();
-        }
-
 
         try{
             List<UsdCirculationDto> usdCirculationDto = objectMapper.readValue(response.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, UsdCirculationDto.class));
@@ -261,6 +256,7 @@ public class DefiLamaServiceImpl implements DefiLamaService {
                         return entity;
                     }).toList();
             stableCoinCirculationRepository.saveAll(usdEntity);
+            log.info("Saved {} stable coin circulation", usdEntity);
 
             return groupedCirculationByPeriod;
             //todo: глибше вникнути в логіку, чому так, можливо, треба буде змінити

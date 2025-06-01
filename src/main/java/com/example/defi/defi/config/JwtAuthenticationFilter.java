@@ -39,17 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        
         String path = request.getServletPath();
         if (path.startsWith("/api/v1/") || path.startsWith("/cr/")) {
             filterChain.doFilter(request, response);
             return;
         }
-
-
-
-
-
+        //Якщо заголовок існує і починається з Bearer
         jwt = authorizationHeader.substring(7); //Витягуємо токен з заголовка
         userEmail = jwtService.extractUsername(jwt); //Отримуємо ім'я користувача з токена
 
@@ -64,7 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 null,
                                 userDetails.getAuthorities()
                         );
-
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); //Додаємо деталі аутентифікації (
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }

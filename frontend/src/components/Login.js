@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-export default function Login({ onLogin }) {
+export default function Login({ setToken }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -21,7 +21,7 @@ export default function Login({ onLogin }) {
             });
             if (!response.ok) throw new Error("Невірний логін або пароль");
             const data = await response.json();
-            onLogin(data.token);
+            setToken(data.token);
         } catch (err) {
             setError(err.message);
         }
@@ -31,30 +31,40 @@ export default function Login({ onLogin }) {
         <Box sx={{ maxWidth: 400, mx: "auto", mt: 8 }}>
             <Typography variant="h5" mb={2}>Вхід</Typography>
             <form onSubmit={handleSubmit}>
-                <TextField
-                    label="Email"
-                    fullWidth
-                    margin="normal"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                />
-                <TextField
-                    label="Пароль"
-                    type="password"
-                    fullWidth
-                    margin="normal"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                />
-                {error && <Typography color="error">{error}</Typography>}
-                <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-                    Увійти
-                </Button>
-
+           <TextField
+                label="Email"
+                fullWidth
+                margin="normal"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                error={!email}
+                helperText={!email ? "Email can't be empty" : ""}
+            />
+            <TextField
+                label="Пароль"
+                type="password"
+                fullWidth
+                margin="normal"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                error={!password}
+                helperText={!password ? "Password can't be empty" : ""}
+            />
+            {error && <Typography color="error">{error}</Typography>}
+            <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{ mt: 2 }}
+                disabled={!email || !password}
+            >
+                Увійти
+            </Button>
             <Button
                 variant="outlined"
                 fullWidth
                 sx={{ mt: 2 }}
+
                 onClick={() => navigate("/register")}
             >
                 Реєстрація

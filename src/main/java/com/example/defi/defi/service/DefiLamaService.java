@@ -9,11 +9,11 @@ import java.util.List;
 
 @Service
 public interface DefiLamaService {
-    public List<ChainDto> getTvlByChain();
+     List<ChainDto> getTvlByChain();
 
-    public List<DexDto> getDexVolume();
+     List<DexDto> getDexVolume();
 
-    public List<UsdCirculationDto> getUsdCirculation();
+     List<UsdCirculationDto> getUsdCirculation();
 
 
 

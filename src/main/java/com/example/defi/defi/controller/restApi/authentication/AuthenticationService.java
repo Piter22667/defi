@@ -39,7 +39,7 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
-    }
+    } // зберігаємо користувача в базі даних, генеруємо JWT токен і повертаємо його
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
@@ -55,5 +55,5 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
-    }
+    }// аутентифікуємо користувача за email та паролем і повертаємо токен
 }
